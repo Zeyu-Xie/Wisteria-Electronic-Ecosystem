@@ -110,16 +110,24 @@ class Boid:
 
 # Assuming some functions for detecting edges
 def outside_top_margin(boid):
-    pass
+    if boid.y >= 100:
+        return True
+    return False
 
 def outside_right_margin(boid):
-    pass
+    if boid.x >= 100:
+        return True
+    return False
 
 def outside_left_margin(boid):
-    pass
+    if boid.x <= 0:
+        return True
+    return False
 
 def outside_bottom_margin(boid):
-    pass
+    if boid.y <= 0:
+        return True
+    return False
 
 # Assuming some function to determine scout group
 def is_scout_group1(boid):

@@ -11,7 +11,7 @@ visual_range_squared = visual_range ** 2
 centering_factor = 0.1
 matching_factor = 0.05
 avoidfactor = 0.1
-turnfactor = 0.1
+turnfactor = 1
 maxbias = 0.1
 bias_increment = 0.01
 minspeed = 0.1
@@ -79,13 +79,13 @@ def update_boid():
 
         # If the boid is near an edge, make it turn by turnfactor
         if Boid.outside_top_margin(boid):
-            boid.vy += turnfactor
+            boid.vy -= turnfactor
         if Boid.outside_right_margin(boid):
             boid.vx -= turnfactor
         if Boid.outside_left_margin(boid):
             boid.vx += turnfactor
         if Boid.outside_bottom_margin(boid):
-            boid.vy -= turnfactor
+            boid.vy += turnfactor
 
         # Dynamically update bias value
         if Boid.is_scout_group1(boid):
@@ -122,8 +122,8 @@ def update_boid():
 
     # Plot the updated boids and save the plot
     plt.figure(figsize=(10, 10))
-    plt.xlim(0, 100)
-    plt.ylim(0, 100)
+    plt.xlim(-1, 101)
+    plt.ylim(-1, 101)
     for boid in boids:
         plt.plot(boid.x, boid.y, 'bo')
     plt.savefig(os.path.join(os.path.dirname(__file__), "img", "boids{}.png".format(update_boid.counter)))
