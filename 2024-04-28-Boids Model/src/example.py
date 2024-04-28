@@ -1,4 +1,6 @@
 import math
+import imageio
+import os
 import Boid
 import matplotlib.pyplot as plt
 
@@ -19,6 +21,7 @@ maxspeed = 1.0
 boids = Boid.initialize_boids(100)
 
 def update_boid():
+    global boids
     # For every boid . . .
     for boid in boids:
 
@@ -117,15 +120,31 @@ def update_boid():
         boid.x += boid.vx
         boid.y += boid.vy
 
-    # Plot the updated boids
+    # Plot the updated boids and save the plot
     plt.figure()
     plt.xlim(0, 100)
     plt.ylim(0, 100)
     for boid in boids:
         plt.plot(boid.x, boid.y, 'bo')
-    plt.show()
+    plt.savefig(os.path.join(os.path.dirname(__file__), "img", "boids{}.png".format(update_boid.counter)))
+    plt.close()
+    update_boid.counter += 1
+
+update_boid.counter = 0
 
 if __name__ == "__main__":
-    for i in range(10):
+
+    # Create img directory if it doesn't exist
+    if not os.path.exists(os.path.join(os.path.dirname(__file__), "img")):
+        os.makedirs(os.path.join(os.path.dirname(__file__), "img"))
+
+    for i in range(1000):
         update_boid()
-    print("Boid updated!")
+
+    # Create GIF
+    images = []
+    for i in range(1000):
+        images.append(imageio.imread(os.path.join(os.path.dirname(__file__), "img", "boids{}.png".format(i))))
+    
+    imageio.mimsave(os.path.join(os.path.dirname(__file__), "boids.gif"), images)
+    print("GIF generated!")
