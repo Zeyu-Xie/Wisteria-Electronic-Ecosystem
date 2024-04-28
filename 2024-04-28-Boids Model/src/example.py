@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 
 # Define constants
 visual_range = 20
-protected_range_squared = 10
+protected_range_squared = 15
 visual_range_squared = visual_range ** 2
 centering_factor = 0.05
 matching_factor = 0.1
-avoidfactor = 0.1
+avoidfactor = 0.2
 turnfactor = 1
 maxbias = 0.1
 bias_increment = 0.01
