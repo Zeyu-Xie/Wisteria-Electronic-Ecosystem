@@ -5,11 +5,11 @@ import Boid
 import matplotlib.pyplot as plt
 
 # Define constants
-visual_range = 10
-protected_range_squared = 3
+visual_range = 20
+protected_range_squared = 10
 visual_range_squared = visual_range ** 2
-centering_factor = 0.1
-matching_factor = 0.05
+centering_factor = 0.05
+matching_factor = 0.1
 avoidfactor = 0.1
 turnfactor = 1
 maxbias = 0.1
@@ -138,12 +138,12 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(os.path.dirname(__file__), "img")):
         os.makedirs(os.path.join(os.path.dirname(__file__), "img"))
 
-    for i in range(100):
+    for i in range(1000):
         update_boid()
 
     # Create GIF
     images = []
-    for i in range(100):
+    for i in range(1000):
         images.append(imageio.imread(os.path.join(os.path.dirname(__file__), "img", "boids{}.png".format(i))))
     
     imageio.mimsave(os.path.join(os.path.dirname(__file__), "boids.gif"), images)
