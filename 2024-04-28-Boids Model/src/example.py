@@ -121,7 +121,7 @@ def update_boid():
         boid.y += boid.vy
 
     # Plot the updated boids and save the plot
-    plt.figure()
+    plt.figure(figsize=(10, 10))
     plt.xlim(0, 100)
     plt.ylim(0, 100)
     for boid in boids:
@@ -138,12 +138,12 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(os.path.dirname(__file__), "img")):
         os.makedirs(os.path.join(os.path.dirname(__file__), "img"))
 
-    for i in range(1000):
+    for i in range(100):
         update_boid()
 
     # Create GIF
     images = []
-    for i in range(1000):
+    for i in range(100):
         images.append(imageio.imread(os.path.join(os.path.dirname(__file__), "img", "boids{}.png".format(i))))
     
     imageio.mimsave(os.path.join(os.path.dirname(__file__), "boids.gif"), images)
