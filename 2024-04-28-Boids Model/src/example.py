@@ -23,7 +23,7 @@ maxspeed = 1.0
 
 if __name__ == "__main__":
     # Create a map instance
-    map_instance = Map(birds_number=50, time_steps=100)
+    map_instance = Map(birds_number=50, time_steps=100, width = 100, height = 100)
 
     # Update boids and generate GIF
     map_instance.update_boids()

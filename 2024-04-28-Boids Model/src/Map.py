@@ -3,7 +3,7 @@ import imageio
 import os
 import matplotlib.pyplot as plt
 import Boid
-
+import tqdm
 
 class Map:
     def __init__(self, width=100, height=100, time_steps=1000, birds_number=100, fig_size_x=10, fig_size_y=10,
