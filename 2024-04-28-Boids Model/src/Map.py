@@ -6,7 +6,7 @@ import Boid
 
 
 class Map:
-    def __init__(self, width = 100, height = 100, time_steps = 1000, birds_number=100, fig_size_x=10, fig_size_y=10,
+    def __init__(self, width=100, height=100, time_steps=1000, birds_number=100, fig_size_x=10, fig_size_y=10,
                  visual_range=20, protected_range_squared=15,
                  centering_factor=0.05, matching_factor=0.1,
                  avoidfactor=0.2, turnfactor=1, maxbias=0.1,
@@ -35,130 +35,121 @@ class Map:
 
     def update_boids(self):
         for i in range(self.time_steps):
-            self._update_boid()
+            self.update_boid()
+        self.create_gif()
 
-        # Create GIF
-        images = []
-        for i in range(self.time_steps):
-            images.append(imageio.imread(os.path.join(
-                os.path.dirname(__file__), "img", "boids{}.png".format(i))))
+    def update_boid(self):
+        self.update_boid_properties()
+        self.plot_boids()
+        self.counter += 1
 
-        imageio.mimsave(os.path.join(
-            os.path.dirname(__file__), "boids.gif"), images)
-        print("GIF generated!")
-
-    def _update_boid(self):
-        # For every boid . . .
+    def update_boid_properties(self):
         for boid in self.boids:
+            self.update_boid_velocity(boid)
+            self.update_boid_position(boid)
 
-            # Zero all accumulator variables
-            xpos_avg, ypos_avg, xvel_avg, yvel_avg, neighboring_boids, close_dx, close_dy = 0, 0, 0, 0, 0, 0, 0
+    def update_boid_velocity(self, boid):
+        xpos_avg, ypos_avg, xvel_avg, yvel_avg, neighboring_boids, close_dx, close_dy = 0, 0, 0, 0, 0, 0, 0
 
-            # For every other boid in the flock . . .
-            for otherboid in self.boids:
+        for otherboid in self.boids:
+            dx = boid.x - otherboid.x
+            dy = boid.y - otherboid.y
 
-                # Compute differences in x and y coordinates
-                dx = boid.x - otherboid.x
-                dy = boid.y - otherboid.y
+            if abs(dx) < self.visual_range and abs(dy) < self.visual_range:
+                squared_distance = dx * dx + dy * dy
 
-                # Are both those differences less than the visual range?
-                if abs(dx) < self.visual_range and abs(dy) < self.visual_range:
+                if squared_distance < self.protected_range_squared:
+                    close_dx += boid.x - otherboid.x
+                    close_dy += boid.y - otherboid.y
 
-                    # If so, calculate the squared distance
-                    squared_distance = dx * dx + dy * dy
+                elif squared_distance < self.visual_range ** 2:
+                    xpos_avg += otherboid.x
+                    ypos_avg += otherboid.y
+                    xvel_avg += otherboid.vx
+                    yvel_avg += otherboid.vy
+                    neighboring_boids += 1
 
-                    # Is squared distance less than the protected range?
-                    if squared_distance < self.protected_range_squared:
+        if neighboring_boids > 0:
+            xpos_avg /= neighboring_boids
+            ypos_avg /= neighboring_boids
+            xvel_avg /= neighboring_boids
+            yvel_avg /= neighboring_boids
 
-                        # If so, calculate difference in x/y-coordinates to nearfield boid
-                        close_dx += boid.x - otherboid.x
-                        close_dy += boid.y - otherboid.y
+            boid.vx += (xpos_avg - boid.x) * self.centering_factor + \
+                (xvel_avg - boid.vx) * self.matching_factor
+            boid.vy += (ypos_avg - boid.y) * self.centering_factor + \
+                (yvel_avg - boid.vy) * self.matching_factor
 
-                    # If not in protected range, is the boid in the visual range?
-                    elif squared_distance < self.visual_range ** 2:
+        boid.vx += close_dx * self.avoidfactor
+        boid.vy += close_dy * self.avoidfactor
 
-                        # Add other boid's x/y-coord and x/y vel to accumulator variables
-                        xpos_avg += otherboid.x
-                        ypos_avg += otherboid.y
-                        xvel_avg += otherboid.vx
-                        yvel_avg += otherboid.vy
+        if Boid.outside_top_margin(boid):
+            boid.vy -= self.turnfactor
+        if Boid.outside_right_margin(boid):
+            boid.vx -= self.turnfactor
+        if Boid.outside_left_margin(boid):
+            boid.vx += self.turnfactor
+        if Boid.outside_bottom_margin(boid):
+            boid.vy += self.turnfactor
 
-                        # Increment number of boids within visual range
-                        neighboring_boids += 1
+        if Boid.is_scout_group1(boid):
+            if boid.vx > 0:
+                boid.biasval = min(
+                    self.maxbias, boid.biasval + self.bias_increment)
+            else:
+                boid.biasval = max(self.bias_increment,
+                                   boid.biasval - self.bias_increment)
+        elif Boid.is_scout_group2(boid):
+            if boid.vx < 0:
+                boid.biasval = min(
+                    self.maxbias, boid.biasval + self.bias_increment)
+            else:
+                boid.biasval = max(self.bias_increment,
+                                   boid.biasval - self.bias_increment)
 
-            # If there were any boids in the visual range . . .
-            if neighboring_boids > 0:
+        if Boid.is_scout_group1(boid):
+            boid.vx = (1 - boid.biasval) * boid.vx + boid.biasval * 1
+        elif Boid.is_scout_group2(boid):
+            boid.vx = (1 - boid.biasval) * boid.vx + boid.biasval * (-1)
 
-                # Divide accumulator variables by number of boids in visual range
-                xpos_avg /= neighboring_boids
-                ypos_avg /= neighboring_boids
-                xvel_avg /= neighboring_boids
-                yvel_avg /= neighboring_boids
+        speed = math.sqrt(boid.vx * boid.vx + boid.vy * boid.vy)
 
-                # Add the centering/matching contributions to velocity
-                boid.vx += (xpos_avg - boid.x) * self.centering_factor + \
-                    (xvel_avg - boid.vx) * self.matching_factor
-                boid.vy += (ypos_avg - boid.y) * self.centering_factor + \
-                    (yvel_avg - boid.vy) * self.matching_factor
+        if speed < self.minspeed:
+            boid.vx = (boid.vx / speed) * self.minspeed
+            boid.vy = (boid.vy / speed) * self.minspeed
+        elif speed > self.maxspeed:
+            boid.vx = (boid.vx / speed) * self.maxspeed
+            boid.vy = (boid.vy / speed) * self.maxspeed
 
-            # Add the avoidance contribution to velocity
-            boid.vx += close_dx * self.avoidfactor
-            boid.vy += close_dy * self.avoidfactor
+    def update_boid_position(self, boid):
+        boid.x += boid.vx
+        boid.y += boid.vy
 
-            # If the boid is near an edge, make it turn by turnfactor
-            if Boid.outside_top_margin(boid):
-                boid.vy -= self.turnfactor
-            if Boid.outside_right_margin(boid):
-                boid.vx -= self.turnfactor
-            if Boid.outside_left_margin(boid):
-                boid.vx += self.turnfactor
-            if Boid.outside_bottom_margin(boid):
-                boid.vy += self.turnfactor
-
-            # Dynamically update bias value
-            if Boid.is_scout_group1(boid):
-                if boid.vx > 0:
-                    boid.biasval = min(
-                        self.maxbias, boid.biasval + self.bias_increment)
-                else:
-                    boid.biasval = max(self.bias_increment,
-                                       boid.biasval - self.bias_increment)
-            elif Boid.is_scout_group2(boid):
-                if boid.vx < 0:
-                    boid.biasval = min(
-                        self.maxbias, boid.biasval + self.bias_increment)
-                else:
-                    boid.biasval = max(self.bias_increment,
-                                       boid.biasval - self.bias_increment)
-
-            # If the boid has a bias, bias it!
-            if Boid.is_scout_group1(boid):
-                boid.vx = (1 - boid.biasval) * boid.vx + boid.biasval * 1
-            elif Boid.is_scout_group2(boid):
-                boid.vx = (1 - boid.biasval) * boid.vx + boid.biasval * (-1)
-
-            # Calculate the boid's speed
-            speed = math.sqrt(boid.vx * boid.vx + boid.vy * boid.vy)
-
-            # Enforce min and max speeds
-            if speed < self.minspeed:
-                boid.vx = (boid.vx / speed) * self.minspeed
-                boid.vy = (boid.vy / speed) * self.minspeed
-            elif speed > self.maxspeed:
-                boid.vx = (boid.vx / speed) * self.maxspeed
-                boid.vy = (boid.vy / speed) * self.maxspeed
-
-            # Update boid's position
-            boid.x += boid.vx
-            boid.y += boid.vy
-
-        # Plot the updated boids and save the plot
+    def plot_boids(self):
         plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
         plt.xlim(-1, self.width + 1)
         plt.ylim(-1, self.height + 1)
         for boid in self.boids:
-            plt.plot(boid.x, boid.y, 'bo')
+            plt.plot(boid.x, boid.y, 'o', color = "red")
+
+        # Add dashed lines
+        plt.axvline(x=(self.width+2)/3-1, linestyle='--', color='gray')
+        plt.axvline(x=self.width + 1 - (self.width+2) /
+                    3, linestyle='--', color='gray')
+        plt.axhline(y=(self.height+2)/3-1, linestyle='--', color='gray')
+        plt.axhline(y=self.height + 1 - (self.height+2) /
+                    3, linestyle='--', color='gray')
+
+        plt.title('Boids Simulation - Frame {}'.format(self.counter))
         plt.savefig(os.path.join(os.path.dirname(__file__),
-                    "img", "boids{}.png".format(self.counter)))
+                                 "img", "boids{}.png".format(self.counter)))
         plt.close()
-        self.counter += 1
+
+    def create_gif(self):
+        images = []
+        for i in range(self.time_steps):
+            images.append(imageio.imread(os.path.join(
+                os.path.dirname(__file__), "img", "boids{}.png".format(i))))
+        imageio.mimsave(os.path.join(
+            os.path.dirname(__file__), "boids.gif"), images)
+        print("GIF generated!")
