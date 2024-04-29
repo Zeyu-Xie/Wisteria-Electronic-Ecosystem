@@ -2,17 +2,17 @@ import math
 import imageio
 import os
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import Boid
 
 class Map:
-    def __init__(self, width=100, height=100, time_steps=1000, birds_number=100, fig_size_x=10, fig_size_y=10,
+    def __init__(self, width=100, height=100, birds_number=100, fig_size_x=10, fig_size_y=10,
                  visual_range=20, protected_range_squared=15,
                  centering_factor=0.05, matching_factor=0.1,
                  avoidfactor=0.2, turnfactor=1, maxbias=0.1,
                  bias_increment=0.01, minspeed=0.1, maxspeed=1.0):
         self.width = width
         self.height = height
-        self.time_steps = time_steps
         self.boids = Boid.initialize_boids(birds_number)
         self.counter = 0
         self.fig_size_x = fig_size_x
@@ -32,15 +32,13 @@ class Map:
         if not os.path.exists(os.path.join(os.path.dirname(__file__), "img")):
             os.makedirs(os.path.join(os.path.dirname(__file__), "img"))
 
-    def update_boids(self):
-        for i in range(self.time_steps):
-            self.update_boid()
-        self.create_gif()
+    def update_boids(self, frame):
+        self.update_boid()
+        self.counter += 1
 
     def update_boid(self):
         self.update_boid_properties()
         self.plot_boids()
-        self.counter += 1
 
     def update_boid_properties(self):
         for boid in self.boids:
@@ -125,7 +123,7 @@ class Map:
         boid.y += boid.vy
 
     def plot_boids(self):
-        plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
+        plt.clf()
         plt.xlim(-1, self.width + 1)
         plt.ylim(-1, self.height + 1)
         for boid in self.boids:
@@ -140,15 +138,10 @@ class Map:
                     3, linestyle='--', color='gray')
 
         plt.title('Boids Simulation - Frame {}'.format(self.counter))
-        plt.savefig(os.path.join(os.path.dirname(__file__),
-                                 "img", "boids{}.png".format(self.counter)))
-        plt.close()
+        # Add watermark
+        plt.text(5, 5, '©️Acan Xie', fontsize=self.width/10, color='gray')
 
-    def create_gif(self):
-        images = []
-        for i in range(self.time_steps):
-            images.append(imageio.imread(os.path.join(
-                os.path.dirname(__file__), "img", "boids{}.png".format(i))))
-        imageio.mimsave(os.path.join(
-            os.path.dirname(__file__), "boids.gif"), images)
-        print("GIF generated!")
+def auto_run(map):
+    fig = plt.figure(figsize=(map.fig_size_x, map.fig_size_y))
+    ani = FuncAnimation(plt.gcf(), map.update_boids, interval = 10)
+    plt.show()

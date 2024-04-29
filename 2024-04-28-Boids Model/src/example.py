@@ -1,4 +1,6 @@
-from Map import Map
+from Map import Map, auto_run
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 # Define basic constants
 fig_size_x = 10
@@ -22,8 +24,5 @@ minspeed = 0.1
 maxspeed = 1.0
 
 if __name__ == "__main__":
-    # Create a map instance
-    map_instance = Map(birds_number=50, time_steps=100, width = 100, height = 100)
-
-    # Update boids and generate GIF
-    map_instance.update_boids()
+    
+    auto_run(Map(fig_size_x=8, fig_size_y=8))
