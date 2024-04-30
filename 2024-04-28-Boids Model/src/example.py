@@ -1,6 +1,4 @@
-from Map import Map, auto_run
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import Map
 
 # Define basic constants
 fig_size_x = 10
@@ -25,4 +23,4 @@ maxspeed = 1.0
 
 if __name__ == "__main__":
     
-    auto_run(Map(fig_size_x=8, fig_size_y=8))
+    Map.Map(fig_size_x=8, fig_size_y=8).create_gif(fps=20, frames=100)
