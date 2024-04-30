@@ -1,5 +1,4 @@
 import math
-import os
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import Boid
@@ -26,10 +25,6 @@ class Map:
         self.bias_increment = bias_increment
         self.minspeed = minspeed
         self.maxspeed = maxspeed
-        
-        # Create img directory if it doesn't exist
-        if not os.path.exists(os.path.join(os.path.dirname(__file__), "img")):
-            os.makedirs(os.path.join(os.path.dirname(__file__), "img"))
 
     def update_boids(self, frame):
         self.update_boid()
@@ -138,14 +133,14 @@ class Map:
 
         plt.title('Boids Simulation - Frame {}'.format(self.counter))
         # Add watermark
-        plt.text(5, 5, '©️Acan Xie', fontsize=self.width/10, color='gray')
+        plt.text(5, 5, '©️ 2024 Acan Xie', fontsize=self.width/10, color='gray')
     
-    def auto_run(self):
+    def auto_run(self, interval=12):
         fig = plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
-        ani = FuncAnimation(plt.gcf(), self.update_boids, interval = 10)
+        ani = FuncAnimation(plt.gcf(), self.update_boids, interval = interval)
         plt.show()
     
-    def create_gif(self, frames, fps):
+    def create_gif(self, frames, fps, fileName="output.gif"):
         fig = plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
         ani = FuncAnimation(plt.gcf(), self.update_boids, frames = frames)
-        ani.save("boids.gif", writer='imagemagick', fps=fps)
+        ani.save(fileName, writer='imagemagick', fps=fps)
