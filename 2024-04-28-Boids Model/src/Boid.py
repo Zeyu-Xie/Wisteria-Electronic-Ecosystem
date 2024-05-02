@@ -2,7 +2,7 @@ import math
 import random
 
 class Boid:
-    def __init__(self, x, y, vx, vy, biasval=0):
+    def __init__(self, x, y, vx, vy, width=100, height=100, biasval=0):
         """
         Initialize a Boid object.
 
@@ -17,6 +17,8 @@ class Boid:
         self.y = y
         self.vx = vx
         self.vy = vy
+        self.width = width
+        self.height = height
         self.biasval = biasval
 
     def update_position(self):
@@ -110,12 +112,12 @@ class Boid:
 
 # Assuming some functions for detecting edges
 def outside_top_margin(boid):
-    if boid.y >= 100:
+    if boid.y >= boid.height:
         return True
     return False
 
 def outside_right_margin(boid):
-    if boid.x >= 100:
+    if boid.x >= boid.width:
         return True
     return False
 
@@ -137,14 +139,16 @@ def is_scout_group2(boid):
     pass
 
 # Function to initialize a group of boids
-def initialize_boids(num_boids):
+def initialize_boids(num_boids, width=100, height=100):
     boids = []
     for _ in range(num_boids):
         boid = Boid(
-            x=random.uniform(0, 100),  # Example range, adjust as needed
-            y=random.uniform(0, 100),
+            x=random.uniform(0, width),  # Example range, adjust as needed
+            y=random.uniform(0, height),
             vx=random.uniform(-1, 1),
-            vy=random.uniform(-1, 1)
+            vy=random.uniform(-1, 1),
+            width=width,
+            height=height
         )
         boids.append(boid)
     return boids

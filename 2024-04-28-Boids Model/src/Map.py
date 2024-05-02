@@ -2,6 +2,8 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import Boid
+import time
+import os
 
 class Map:
     def __init__(self, width=100, height=100, birds_number=100, fig_size_x=10, fig_size_y=10,
@@ -11,7 +13,8 @@ class Map:
                  bias_increment=0.01, minspeed=0.1, maxspeed=1.0):
         self.width = width
         self.height = height
-        self.boids = Boid.initialize_boids(birds_number)
+        self.birds_number = birds_number
+        self.boids = Boid.initialize_boids(birds_number, width, height)
         self.counter = 0
         self.fig_size_x = fig_size_x
         self.fig_size_y = fig_size_y
@@ -116,6 +119,49 @@ class Map:
         boid.x += boid.vx
         boid.y += boid.vy
 
+    def print_boids(self):
+
+        os.system('clear')
+
+        print("Frame {}".format(self.counter))
+
+        tmp_ground = [[0 for i in range(self.width+2)] for j in range(self.height+2)]
+        for i in range(self.birds_number):
+            x = math.floor(self.boids[i].x+1)
+            y = math.floor(self.boids[i].y+1)
+            
+            print(f"index: {i:<7} x: {x:<4} y: {y:<4}", end="")
+
+            if x < 0 or x >= self.width+2 or y < 0 or y >= self.height+2:
+                print("Out of range")
+                continue
+            
+            print("")
+
+            tmp_ground[x][y] = 1
+        
+        print("")
+
+        print("Frame {}".format(self.counter))
+        print("|", end="")
+        for i in range(self.width+2):
+            print("--", end="")
+        print("|")
+
+        for i in range(self.height+2):
+            print("|", end="")
+            for j in range(self.width+2):
+                if tmp_ground[j][self.width+1-i] == 1:
+                    print("o ", end="")
+                else:
+                    print("  ", end="")
+            print("|")
+
+        print("|", end="")
+        for i in range(self.width+2):
+            print("--", end="")
+        print("|")
+
     def plot_boids(self):
         plt.clf()
         plt.xlim(-1, self.width + 1)
@@ -135,10 +181,18 @@ class Map:
         # Add watermark
         plt.text(5, 5, '©️ 2024 Acan Xie', fontsize=self.width/10, color='gray')
     
-    def auto_run(self, interval=12):
-        fig = plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
-        ani = FuncAnimation(plt.gcf(), self.update_boids, interval = interval)
-        plt.show()
+    def auto_run(self, interval=12, type = "text"):
+
+        if type == "text":
+            while True:
+                self.update_boid()
+                self.counter += 1
+                self.print_boids()
+                time.sleep(1/interval)
+        elif type == "figure":
+            fig = plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
+            ani = FuncAnimation(plt.gcf(), self.update_boids, interval = interval)
+            plt.show()
     
     def create_gif(self, frames, fps, fileName="output.gif"):
         fig = plt.figure(figsize=(self.fig_size_x, self.fig_size_y))
